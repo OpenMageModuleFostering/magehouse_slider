@@ -12,6 +12,9 @@
       </slider>
     </helpers>
     <blocks>
+      <slider>
+        <class>Magehouse_Slider_Block</class>
+      </slider>
       <catalog>
         <rewrite>
 		  <layer_filter_price>Magehouse_Slider_Block_Catalog_Layer_Filter_Price</layer_filter_price>
