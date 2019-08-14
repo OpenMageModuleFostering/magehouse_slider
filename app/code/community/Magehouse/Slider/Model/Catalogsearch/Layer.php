@@ -26,26 +26,6 @@
 
 class Magehouse_Slider_Model_Catalogsearch_Layer extends Mage_CatalogSearch_Model_Layer 
 {
-    const XML_PATH_DISPLAY_LAYER_COUNT = 'catalog/search/use_layered_navigation_count';
-
-    /**
-     * Get current layer product collection
-     *
-     * @return Mage_Catalog_Model_Resource_Eav_Resource_Product_Collection
-     */
-    public function getProductCollection()
-    {
-        if (isset($this->_productCollections[$this->getCurrentCategory()->getId()])) {
-            $collection = $this->_productCollections[$this->getCurrentCategory()->getId()];
-        } else {
-            $collection = Mage::getResourceModel('catalogsearch/fulltext_collection');
-            $this->prepareProductCollection($collection);
-			
-            $this->_productCollections[$this->getCurrentCategory()->getId()] = $collection;
-        }
-        return $collection;
-    }
-
     /**
      * Prepare product collection
      *
@@ -67,9 +47,9 @@ class Magehouse_Slider_Model_Catalogsearch_Layer extends Mage_CatalogSearch_Mode
         Mage::getSingleton('catalog/product_status')->addVisibleFilterToCollection($collection);
         Mage::getSingleton('catalog/product_visibility')->addVisibleInSearchFilterToCollection($collection);
 		
-		/*PRICE SLIDER FILTER*/
-		$max=$_GET['max'];
-		$min=$_GET['min'];
+		$this->currentRate = $collection->getCurrencyRate();
+		$max=$this->getMaxPriceFilter();
+		$min=$this->getMinPriceFilter();
 		
 		//print_r($collection->getData());
 		
@@ -81,15 +61,26 @@ class Magehouse_Slider_Model_Catalogsearch_Layer extends Mage_CatalogSearch_Mode
 		}
 		
 		/*PRICE SLIDER FILTER*/
-		
-		
-		
         return $this;
     }
 	
+	/*
+	* convert Price as per currency
+	*
+	* @return currency
+	*/
+	public function getMaxPriceFilter(){
+		return round($_GET['max']/$this->currentRate);
+	}
 	
 	
-
-
-   
+	/*
+	* Convert Min Price to current currency
+	*
+	* @return currency
+	*/
+	public function getMinPriceFilter(){
+		return round($_GET['min']/$this->currentRate);
+	}
+    
 }

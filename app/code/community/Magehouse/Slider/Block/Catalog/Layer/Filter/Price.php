@@ -18,6 +18,15 @@ class Magehouse_Slider_Block_Catalog_Layer_Filter_Price extends Mage_Catalog_Blo
 	public $_currMaxPrice;
 	public $_imagePath;
 	
+	
+	/*
+	* 
+	* Set all the required data that our slider will require
+	* Set current _currentCategory, _searchSession, setProductCollection, setMinPrice, setMaxPrice, setCurrentPrices, _imagePath
+	* 
+	* @set all required data
+	* 
+	*/
 	public function __construct(){
 	
 		$this->_currentCategory = Mage::registry('current_category');
@@ -26,11 +35,18 @@ class Magehouse_Slider_Block_Catalog_Layer_Filter_Price extends Mage_Catalog_Blo
 		$this->setMinPrice();
 		$this->setMaxPrice();
 		$this->setCurrentPrices();
-		$this->_imagePath = $this->getUrl('media/magehouse/slider');
+		$this->_imagePath = Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_MEDIA).'magehouse/slider/';
 		
 		parent::__construct();		
 	}
 	
+	/*
+	* 
+	* Check whether the slider is enabled.
+	*
+	* @return boolean
+	* 
+	*/
 	public function getSliderStatus(){
 		if(Mage::getStoreConfig('price_slider/price_slider_settings/slider_loader_active'))
 			return true;
@@ -38,22 +54,85 @@ class Magehouse_Slider_Block_Catalog_Layer_Filter_Price extends Mage_Catalog_Blo
 			return false;			
 	}
 	 
+	
+	/*
+	* Fetch Styles for price text Box
+	*
+	* @return styles
+	*/
+	public function getPriceBoxStyle(){
+		$styles = trim($this->getConfig('price_slider/price_slider_conf/textBoxCss'));
+		if($styles == ''){
+			$styles = "width:50px; padding:5px; border-radius:5px; ";
+		}
+		return $styles;
+	}
+	
+	public function getGoBtnText(){
+		$name = trim($this->getConfig('price_slider/price_slider_conf/goBtnText'));
+		if($name == ''){
+			$name = "Go";
+		}
+		return $name;
+	}
+
+	public function getGoBtnStyle(){
+		$styles = trim($this->getConfig('price_slider/price_slider_conf/goBtnCss'));
+		return $styles;
+	}
+	
+	public function isTextBoxEnabled(){
+		return $this->getConfig('price_slider/price_slider_conf/textbox');	
+	}
+	
+	
+	public function getPriceDisplayType(){
+		$textBoxStyle = $this->getPriceBoxStyle();
+		$goBtnStyle = $this->getGoBtnStyle();
+		if($this->isTextBoxEnabled()){
+			$html = '
+				<div class="text-box">
+					'.$this->getCurrencySymbol().' <input type="text" name="min" id="minPrice" class="priceTextBox" value="'.$this->getCurrMinPrice().'" style="'.$textBoxStyle.'" /> - 
+					'.$this->getCurrencySymbol().' <input type="text" name="max" id="maxPrice" class="priceTextBox" value="'.$this->getCurrMaxPrice().'" style="'.$textBoxStyle.'" />
+					<input type="button" value="'.$this->getGoBtnText().'" name="go" class="go" style="'.$goBtnStyle.'" />
+					<input type="hidden" id="amount" readonly="readonly" style="background:none; border:none;" value="'.$this->getCurrencySymbol().$this->getCurrMinPrice()." - ".$this->getCurrencySymbol().$this->getCurrMaxPrice().'" />
+
+				</div>';
+		}else{
+			$html = '<p>
+					<input type="text" id="amount" readonly="readonly" style="background:none; border:none;" value="'.$this->getCurrencySymbol().$this->getCurrMinPrice()." - ".$this->getCurrencySymbol().$this->getCurrMaxPrice().'" />
+					</p>';	
+		}
+		return $html;
+	}
+	
+	/**
+	*
+	* Prepare html for slider and add JS that incorporates the slider.
+	*
+	* @return html
+	*
+	*/
+	
 	public function getHtml(){
+		
 		if($this->getSliderStatus()){
 			$text='
 				<div class="price">
-					<p>
-						<input type="text" id="amount" readonly="readonly" style="background:none; border:none;" />
-					</p>
+					'.$this->getPriceDisplayType().'
 					<div id="slider-range"></div>
 					
-				</div>'.$this->getSliderJs().'
-			';	
+				</div>'.$this->getSliderJs();	
 			
 			return $text;
 		}	
 	}
 	
+	/*
+	* Prepare query string that was in the original url 
+	*
+	* @return queryString
+	*/
 	public function prepareParams(){
 		$url="";
 	
@@ -68,51 +147,188 @@ class Magehouse_Slider_Block_Catalog_Layer_Filter_Price extends Mage_Catalog_Blo
 		return $url;
 	}
 	
+	/*
+	* Fetch Current Currency symbol
+	* 
+	* @return currency
+	*/
 	public function getCurrencySymbol(){
 		return Mage::app()->getLocale()->currency(Mage::app()->getStore()->getCurrentCurrencyCode())->getSymbol();
 	}
 	
-	public function getSliderJs(){
-		
+	/*
+	* Fetch Current Minimum Price
+	* 
+	* @return price
+	*/
+	public function getCurrMinPrice(){
+		if($this->_currMinPrice > 0){
+			$min = $this->_currMinPrice;
+		} else{
+			$min = $this->_minPrice;
+		}
+		return $min;
+	}
+	
+	/*
+	* Fetch Current Maximum Price
+	* 
+	* @return price
+	*/
+	public function getCurrMaxPrice(){
+		if($this->_currMaxPrice > 0){
+			$max = $this->_currMaxPrice;
+		} else{
+			$max = $this->_maxPrice;
+		}
+		return $max;
+	}
+	
+	/*
+	* Get Slider Configuration TimeOut
+	* 
+	* @return timeout
+	*/
+	public function getConfigTimeOut(){
+		return $this->getConfig('price_slider/price_slider_conf/timeout');
+	}
+	
+	
+	/*
+	* Gives you the current url without parameters
+	* 
+	* @return url
+	*/
+	public function getCurrentUrlWithoutParams(){
 		$baseUrl = explode('?',Mage::helper('core/url')->getCurrentUrl());
 		$baseUrl = $baseUrl[0];
-		$timeout = $this->getConfig('price_slider/price_slider_conf/timeout');
+		return $baseUrl;
+	}
+	
+	/*
+	* Check slider Ajax enabled
+	* 
+	* @return boolean
+	*/
+	public function isAjaxSliderEnabled(){
+		return $this->getConfig('price_slider/ajax_conf/slider');
+	}
+	
+	
+	public function getOnSlideCallbacks(){
+		return $this->getConfig('price_slider/price_slider_conf/onSlide');	
+	}
+	
+	/*
+	* Get JS that brings the slider in Action
+	* 
+	* @return JavaScript
+	*/
+	public function getSliderJs(){
+		
+		$baseUrl = $this->getCurrentUrlWithoutParams();
+		$timeout = $this->getConfigTimeOut();
 		$styles = $this->prepareCustomStyles();
-		if($this->_currMaxPrice > 0){$max = $this->_currMaxPrice;} else{$max = $this->_maxPrice;}
-		if($this->_currMinPrice > 0){$min = $this->_currMinPrice;} else{$min = $this->_minPrice;}
-		$sliderAjax = $this->getConfig('price_slider/ajax_conf/slider');
-		if($sliderAjax){
+		
+		if($this->isAjaxSliderEnabled()){
 			$ajaxCall = 'sliderAjax(url);';
-		}else{$ajaxCall = '';}
+		}else{
+			$ajaxCall = 'window.location=url;';
+		}
+		
+		if($this->isTextBoxEnabled()){
+			$updateTextBoxPriceJs = '
+							// Update TextBox Price
+							$("#minPrice").val(newMinPrice); 
+							$("#maxPrice").val(newMaxPrice);';
+		}
+		
+		
 		$html = '
 			<script type="text/javascript">
 				jQuery(function($) {
+					var newMinPrice, newMaxPrice, url, temp;
+					var categoryMinPrice = '.$this->_minPrice.';
+					var categoryMaxPrice = '.$this->_maxPrice.';
+					function isNumber(n) {
+					  return !isNaN(parseFloat(n)) && isFinite(n);
+					}
+					
+					$(".priceTextBox").focus(function(){
+						temp = $(this).val();	
+					});
+					
+					$(".priceTextBox").keyup(function(){
+						var value = $(this).val();
+						if(!isNumber(value)){
+							$(this).val(temp);	
+						}
+					});
+					
+					$(".priceTextBox").keypress(function(e){
+						if(e.keyCode == 13){
+							var value = $(this).val();
+							if(value < categoryMinPrice || value > categoryMaxPrice){
+								$(this).val(temp);	
+							}
+							url = getUrl($("#minPrice").val(), $("#maxPrice").val());
+							'.$ajaxCall.'	
+						}	
+					});
+					
+					$(".priceTextBox").blur(function(){
+						var value = $(this).val();
+						if(value < categoryMinPrice || value > categoryMaxPrice){
+							$(this).val(temp);	
+						}
+						
+					});
+					
+					$(".go").click(function(){
+						url = getUrl($("#minPrice").val(), $("#maxPrice").val());
+						'.$ajaxCall.'	
+					});
+					
 					$( "#slider-range" ).slider({
 						range: true,
-						min: '.$this->_minPrice.',
-						max: '.$this->_maxPrice.',
-						values: [ '.$min.', '.$max.' ],
+						min: categoryMinPrice,
+						max: categoryMaxPrice,
+						values: [ '.$this->getCurrMinPrice().', '.$this->getCurrMaxPrice().' ],
 						slide: function( event, ui ) {
-							$( "#amount" ).val( "'.$this->getCurrencySymbol().'" + ui.values[ 0 ] + " - '.$this->getCurrencySymbol().'" + ui.values[ 1 ] );
+							newMinPrice = ui.values[0];
+							newMaxPrice = ui.values[1];
+							
+							$( "#amount" ).val( "'.$this->getCurrencySymbol().'" + newMinPrice + " - '.$this->getCurrencySymbol().'" + newMaxPrice );
+							
+							'.$updateTextBoxPriceJs.'
+							
 						},stop: function( event, ui ) {
-							var x1 = ui.values[0];
-							var x2 = ui.values[1];
-							$( "#amount" ).val( "'.$this->getCurrencySymbol().'"+x1+" - '.$this->getCurrencySymbol().'"+x2 );
-							var url = "'.$baseUrl.'"+"?min="+x1+"&max="+x2+"'.$this->prepareParams().'";
-							if(x1 != '.$min.' && x2 != '.$max.'){
+							
+							// Current Min and Max Price
+							var newMinPrice = ui.values[0];
+							var newMaxPrice = ui.values[1];
+							
+							// Update Text Price
+							$( "#amount" ).val( "'.$this->getCurrencySymbol().'"+newMinPrice+" - '.$this->getCurrencySymbol().'"+newMaxPrice );
+							
+							'.$updateTextBoxPriceJs.'
+							
+							url = getUrl(newMinPrice,newMaxPrice);
+							if(newMinPrice != '.$this->getCurrMinPrice().' && newMaxPrice != '.$this->getCurrMaxPrice().'){
 								clearTimeout(timer);
 								//window.location= url;
 								
 							}else{
 									timer = setTimeout(function(){
-										//window.location= url;
 										'.$ajaxCall.'
 									}, '.$timeout.');     
 								}
 						}
 					});
-					$( "#amount" ).val( "'.$this->getCurrencySymbol().'" + $( "#slider-range" ).slider( "values", 0 ) +
-						" - '.$this->getCurrencySymbol().'" + $( "#slider-range" ).slider( "values", 1 ) );
+					
+					function getUrl(newMinPrice, newMaxPrice){
+						return "'.$baseUrl.'"+"?min="+newMinPrice+"&max="+newMaxPrice+"'.$this->prepareParams().'";
+					}
 				});
 			</script>
 			
@@ -121,6 +337,15 @@ class Magehouse_Slider_Block_Catalog_Layer_Filter_Price extends Mage_Catalog_Blo
 		
 		return $html;
 	}
+	
+	
+	/*
+	*
+	* Prepare custom slider styles as per user configuration
+	*
+	* @return style/css
+	*
+	*/
 	
 	public function prepareCustomStyles(){
 		$useImage = $this->getConfig('price_slider/price_slider_conf/use_image');
@@ -167,33 +392,56 @@ class Magehouse_Slider_Block_Catalog_Layer_Filter_Price extends Mage_Catalog_Blo
 		return $html;
 	}
 	
+	
+	/*
+	* Get the Slider config 
+	*
+	* @return object
+	*/
 	public function getConfig($key){
 		return Mage::getStoreConfig($key);
 	}
 	
+	
+	/*
+	* Set the Actual Min Price of the search and catalog collection
+	*
+	* @use category | search collection
+	*/
 	public function setMinPrice(){
 		if( (isset($_GET['q']) && !isset($_GET['min'])) || !isset($_GET['q'])){
-		$this->_minPrice = $this->_productCollection
-							->getFirstItem()
-							->getPrice();
-		$this->_searchSession->setMinPrice($this->_minPrice);					
-							
+			$this->_minPrice = $this->_productCollection->getMinPrice();
+			$this->_searchSession->setMinPrice($this->_minPrice);		
 		}else{
 			$this->_minPrice = $this->_searchSession->getMinPrice();	
 		}
 	}
 	
+	/*
+	* Set the Actual Max Price of the search and catalog collection
+	*
+	* @use category | search collection
+	*/
 	public function setMaxPrice(){
 		if( (isset($_GET['q']) && !isset($_GET['max'])) || !isset($_GET['q'])){
-		$this->_maxPrice = $this->_productCollection
-							->getLastItem()
-							->getPrice();
-		$this->_searchSession->setMaxPrice($this->_maxPrice);					
+			$this->_maxPrice = $this->_productCollection->getMaxPrice();
+			$this->_searchSession->setMaxPrice($this->_maxPrice);
 		}else{
 			$this->_maxPrice = $this->_searchSession->getMaxPrice();
 		}
 	}
 	
+	/*
+	* Set the Product collection based on the page server to user 
+	* Might be a category or search page
+	*
+	* @set /*
+	* Set the Product collection based on the page server to user 
+	* Might be a category or search page
+	*
+	* @set Mage_Catalogsearch_Model_Layer 
+	* @set Mage_Catalog_Model_Layer    
+	*/
 	public function setProductCollection(){
 		
 		if($this->_currentCategory){
@@ -205,14 +453,38 @@ class Magehouse_Slider_Block_Catalog_Layer_Filter_Price extends Mage_Catalog_Blo
 			$this->_productCollection = Mage::getSingleton('catalogsearch/layer')->getProductCollection()	
 							->addAttributeToSelect('*')
 							->setOrder('price', 'ASC');
-
-		}
-							
+		}					
 	}
 	
+	
+	/*
+	* Set Current Max and Min Prices choosed by the user
+	*
+	* @set price
+	*/
 	public function setCurrentPrices(){
 		
 		$this->_currMinPrice = $this->getRequest()->getParam('min');
 		$this->_currMaxPrice = $this->getRequest()->getParam('max'); 
 	}	
+	
+	/*
+	* Set Current Max and Min Prices choosed by the user
+	*
+	* @set price
+	*/
+	public function baseToCurrent($srcPrice){
+		$store = $this->getStore();
+        return $store->convertPrice($srcPrice, false, false);
+	}
+	
+	
+	/*
+	* Retrive store object
+	*
+	* @return object
+	*/
+	public function getStore(){
+		return Mage::app()->getStore();
+	}
 }

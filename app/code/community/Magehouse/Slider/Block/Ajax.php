@@ -20,4 +20,8 @@ class Magehouse_Slider_Block_Ajax extends Mage_Core_Block_Template{
 			$this->loadingImage = $this->url.'media/magehouse/slider/default/'.$loadingImage;
 		}	
 	}
+	
+	public function getCallbackJs(){
+		return Mage::getStoreConfig('price_slider/ajax_conf/afterAjax');
+	}
 }

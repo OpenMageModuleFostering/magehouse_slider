@@ -2,9 +2,10 @@
 	var data = "";
 	var active = false;
 	jQuery(function($){
-		$('.main').append('<div id="resultLoading" style="display:none"><div><img src="<?php echo $this->loadingImage ?>"><div><?php echo $this->loadingText ?></div></div><div class="bg"></div></div>');
-		var height = $('.main').height();
-		var width = $('.main').width();
+		if($('body').find('#resultLoading').attr('id') != 'resultLoading'){
+		$('.main').append('<div id="resultLoading" style="display:none"><div><img src="<?php echo $this->loadingImage ?>"><div><?php echo $this->loadingText ?></div></div><div class="bg"></div></div>');}
+		var height = $('.main').outerHeight();
+		var width = $('.main').outerWidth();
 		$('.ui-slider-handle').css('cursor','pointer');
 		
 		$('#resultLoading').css({
@@ -19,7 +20,7 @@
 			'background':'<?php echo $this->overlayColor; ?>',
 			'opacity':'<?php echo $this->overlayOpacity ?>',
 			'width':'100%',
-			'height':height,
+			'height':'100%',
 			'position':'absolute',
 			'top':'0'
 		});
@@ -49,8 +50,52 @@
 
 <?php if($this->ajaxSlider || $this->ajaxLayered): ?>
 /*DONOT EDIT THIS CODE*/
-eval(function(p,a,c,k,e,d){e=function(c){return(c<a?'':e(parseInt(c/a)))+((c=c%a)>35?String.fromCharCode(c+29):c.toString(36))};while(c--){if(k[c]){p=p.replace(new RegExp('\\b'+e(c)+'\\b','g'),k[c])}}return p}('9 s(1){2(!8){8=r;q(9($){p=1;$(\'#4 .j\').3($(\'.f\').3());$(\'#4\').t(g);u{$(\'7\').h(\'m\',\'y\');$.o({1:1,x:\'w\',v:\'z\',0:0,n:9(0){2(0.c){2($(\'.5-6\')){$(\'.5-6\').a();$(\'.5-6\').k(0.c)}}2(0.i){$(\'.b-l\').a();$(\'.b-l\').k(0.i)}I L=1.K(\'?\');A.M.N(\'P\',0.O,1);$(\'7\').Q(\'.J D\').C(\'B\');$(\'#4 .j\').3($(\'.f\').3());$(\'#4\').E(g);$(\'7\').h(\'m\',\'F\')}})}H(e){}});8=d}G d}',53,53,'data|url|if|height|resultLoading|col|left|body|active|function|empty|category|viewpanel|false||main|300|css|productlist|bg|append|products|cursor|success|ajax|oldUrl|jQuery|true|sliderAjax|fadeIn|try|type|json|dataType|wait|post|window|onchange|removeAttr|select|fadeOut|default|return|catch|var|toolbar|split|hist|history|pushState|title|GET|find'.split('|')))
+function sliderAjax(url) {
+    if (!active) {
+        active = true;
+        jQuery(function($) {
+            oldUrl = url;
+            $('#resultLoading .bg').height('100%');
+            $('#resultLoading').fadeIn(300);
+            try {
+                $('body').css('cursor', 'wait');
+                $.ajax({
+                    url: url,
+                    dataType: 'json',
+                    type: 'post',
+                    data: data,
+                    success: function(data) {
+						callback();
+                        if (data.viewpanel) {
+                            if ($('.block-layered-nav')) {
+                                $('.block-layered-nav').empty();
+                                $('.block-layered-nav').append(data.viewpanel)
+                            }
+                        }
+                        if (data.productlist) {
+                            $('.category-products').empty();
+                            $('.category-products').append(data.productlist)
+                        }
+                        var hist = url.split('?');
+                        if(window.history && window.history.pushState){
+							window.history.pushState('GET', data.title, url);
+						}
+                        $('body').find('.toolbar select').removeAttr('onchange');
+                        $('#resultLoading .bg').height('100%');
+                        $('#resultLoading').fadeOut(300);
+                        $('body').css('cursor', 'default')
+                    }
+                })
+            } catch (e) {}
+        });
+        active = false
+    }
+    return false
+}
 <?php endif; ?> 
 
+function callback(){
+	<?php echo $this->getCallbackJs(); ?>	
+}
 </script>
 
