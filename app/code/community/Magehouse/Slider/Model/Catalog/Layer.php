@@ -49,11 +49,15 @@ class Magehouse_Slider_Model_Catalog_Layer extends Mage_Catalog_Model_Layer
 		/*PRICE SLIDER FILTER*/
 		$max=$_GET['max'];
 		$min=$_GET['min'];
-		if($min)
-			$collection= $collection->addAttributeToFilter('price',array('gteq'=>$min)); 
 		
-		if($max)
-			$collection= $collection->addAttributeToFilter('price',array('lteq'=>$max));
+		//print_r($collection->getData());
+		
+		if($min && $max){
+			//$collection= $collection->addAttributeToFilter('price',array('from'=>$min, 'to'=>$max)); 
+			$collection->getSelect()->where(' final_price >= "'.$min.'" AND final_price <= "'.$max.'" ');
+			
+			//echo $collection->getSelect();exit;
+		}
 		
 		/*PRICE SLIDER FILTER*/
 		
