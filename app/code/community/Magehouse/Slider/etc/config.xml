@@ -24,6 +24,11 @@
           <layer>Magehouse_Slider_Model_Catalog_Layer</layer>
         </rewrite>
       </catalog>
+	  <catalogsearch>
+        <rewrite>
+          <layer>Magehouse_Slider_Model_Catalogsearch_Layer</layer>
+        </rewrite>
+      </catalogsearch>
     </models>
   </global>
   <frontend>

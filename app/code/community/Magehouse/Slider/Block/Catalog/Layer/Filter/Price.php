@@ -10,6 +10,7 @@ class Magehouse_Slider_Block_Catalog_Layer_Filter_Price extends Mage_Catalog_Blo
 {
     	
 	public $_currentCategory;
+	public $_searchSession;
 	public $_productCollection;
 	public $_maxPrice;
 	public $_minPrice;
@@ -20,11 +21,13 @@ class Magehouse_Slider_Block_Catalog_Layer_Filter_Price extends Mage_Catalog_Blo
 	public function __construct(){
 	
 		$this->_currentCategory = Mage::registry('current_category');
+		$this->_searchSession = Mage::getSingleton('catalogsearch/session');
 		$this->setProductCollection();
 		$this->setMinPrice();
 		$this->setMaxPrice();
 		$this->setCurrentPrices();
 		$this->_imagePath = $this->getUrl('media/magehouse/slider');
+		
 		parent::__construct();		
 	}
 	
@@ -70,7 +73,9 @@ class Magehouse_Slider_Block_Catalog_Layer_Filter_Price extends Mage_Catalog_Blo
 	}
 	
 	public function getSliderJs(){
-		$baseUrl = $this->_currentCategory->getUrl();
+		
+		$baseUrl = explode('?',Mage::helper('core/url')->getCurrentUrl());
+		$baseUrl = $baseUrl[0];
 		$timeout = $this->getConfig('price_slider/price_slider_conf/timeout');
 		$styles = $this->prepareCustomStyles();
 		if($this->_currMaxPrice > 0){$max = $this->_currMaxPrice;} else{$max = $this->_maxPrice;}
@@ -89,7 +94,7 @@ class Magehouse_Slider_Block_Catalog_Layer_Filter_Price extends Mage_Catalog_Blo
 							var x1 = ui.values[0];
 							var x2 = ui.values[1];
 							$( "#amount" ).val( "'.$this->getCurrencySymbol().'"+x1+" - '.$this->getCurrencySymbol().'"+x2 );
-							var url = "'.$baseUrl.'"+"/?min="+x1+"&max="+x2+"'.$this->prepareParams().'";
+							var url = "'.$baseUrl.'"+"?min="+x1+"&max="+x2+"'.$this->prepareParams().'";
 							if(x1 != '.$min.' && x2 != '.$max.'){
 								clearTimeout(timer);
 								window.location= url;
@@ -161,22 +166,42 @@ class Magehouse_Slider_Block_Catalog_Layer_Filter_Price extends Mage_Catalog_Blo
 	}
 	
 	public function setMinPrice(){
+		if( (isset($_GET['q']) && !isset($_GET['min'])) || !isset($_GET['q'])){
 		$this->_minPrice = $this->_productCollection
 							->getFirstItem()
 							->getPrice();
+		$this->_searchSession->setMinPrice($this->_minPrice);					
+							
+		}else{
+			$this->_minPrice = $this->_searchSession->getMinPrice();	
+		}
 	}
 	
 	public function setMaxPrice(){
+		if( (isset($_GET['q']) && !isset($_GET['max'])) || !isset($_GET['q'])){
 		$this->_maxPrice = $this->_productCollection
 							->getLastItem()
 							->getPrice();
+		$this->_searchSession->setMaxPrice($this->_maxPrice);					
+		}else{
+			$this->_maxPrice = $this->_searchSession->getMaxPrice();
+		}
 	}
 	
 	public function setProductCollection(){
-		$this->_productCollection = $this->_currentCategory
+		
+		if($this->_currentCategory){
+			$this->_productCollection = $this->_currentCategory
 							->getProductCollection()
 							->addAttributeToSelect('*')
 							->setOrder('price', 'ASC');
+		}else{
+			$this->_productCollection = Mage::getSingleton('catalogsearch/layer')->getProductCollection()	
+							->addAttributeToSelect('*')
+							->setOrder('price', 'ASC');
+
+		}
+							
 	}
 	
 	public function setCurrentPrices(){
