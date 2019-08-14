@@ -85,8 +85,82 @@ class Magehouse_Slider_Block_Catalog_Layer_Filter_Price extends Mage_Catalog_Blo
 		return $this->getConfig('price_slider/price_slider_conf/textbox');	
 	}
 	
+	public function setNewPrices(){
+		$this->setInSession('_newCurrMinPrice', $this->_currMinPrice);	
+		$this->setInSession('_newCurrMaxPrice', $this->_currMaxPrice);	
+		if(!is_numeric($this->_currMinPrice)){
+			$this->_currMinPrice = 0;
+			$this->setInSession('_currMinPrice', 0);
+		}
+		
+		if(!is_numeric($this->_currMaxPrice)){
+			$this->_currMaxPrice = 0;
+			$this->setInSession('_currMaxPrice', 0);
+		}
+		
+		$sMin = $this->getFromSession('_minPrice');
+		$sMax = $this->getFromSession('_maxPrice');
+		$csMin = $this->getFromSession('_currMinPrice');
+		$csMax = $this->getFromSession('_currMaxPrice');
+		$ncsMin = $this->getFromSession('_newCurrMinPrice');
+		$ncsMax = $this->getFromSession('_newCurrMaxPrice');
+		
+		
+		// if Filters are called
+			
+		$a[0][] = 'price_index.min_price';
+		$a[0][] = 'ASC';
+		$loadedCollection = $this->getLayout()->getBlockSingleton('catalog/product_list')->getLoadedProductCollection()->setOrder('min_price','DESC')->getSelect()->setPart('order',$a)->query()->fetchAll();
+		//print_r(get_class_methods($loadedCollection));exit;
+		//echo '<pre>';
+		$tot = count($loadedCollection);
+		
+		//echo $loadedCollection;exit;
+		
+		if(count($loadedCollection) > 0){
+			$loadedMin = $loadedCollection[0]['min_price'];
+			$loadedMax = $loadedCollection[$tot-1]['min_price'];	
+		}	
+		
+		
+		
+				
+		if($this->_currMinPrice == $csMin && $this->_currMaxPrice == $csMax){
+			
+			if($this->_minPrice != $ncsMin){
+				$this->setInSession('_minPrice', $loadedMin);
+				$this->_minPrice = $loadedMin;
+			}
+			if($loadedMin >= $csMin){
+				$this->_currMinPrice = $loadedMin;
+				$this->setInSession('_currMinPrice', $loadedMin);
+			}
+			if($this->_maxPrice != $ncsMax){
+				$this->setInSession('_maxPrice', $loadedMin);
+				$this->_maxPrice = $loadedMax;
+			}
+			if($loadedMax <= $csMax){
+				$this->_currMaxPrice = $loadedMax;
+				$this->setInSession('_currMaxPrice', $loadedMax);
+			}
+		}else{
+			if($ncsMin == $loadedMin){
+				$this->setInSession('_minPrice', $loadedMin);
+				$this->_minPrice = $loadedMin;
+			}
+			if($ncsMax == $loadedMax){
+				$this->setInSession('_maxPrice', $loadedMin);
+				$this->_maxPrice = $loadedMax;
+			}
+			
+			
+				
+		}
+	}
 	
 	public function getPriceDisplayType(){
+		
+		
 		$textBoxStyle = $this->getPriceBoxStyle();
 		$goBtnStyle = $this->getGoBtnStyle();
 		if($this->isTextBoxEnabled()){
@@ -117,6 +191,7 @@ class Magehouse_Slider_Block_Catalog_Layer_Filter_Price extends Mage_Catalog_Blo
 	public function getHtml(){
 		
 		if($this->getSliderStatus()){
+			$this->setNewPrices();
 			$text='
 				<div class="price">
 					'.$this->getPriceDisplayType().'
@@ -410,11 +485,20 @@ class Magehouse_Slider_Block_Catalog_Layer_Filter_Price extends Mage_Catalog_Blo
 	*/
 	public function setMinPrice(){
 		if( (isset($_GET['q']) && !isset($_GET['min'])) || !isset($_GET['q'])){
-			$this->_minPrice = $this->_productCollection->getMinPrice();
+			
+			if(Mage::getVersion() < '1.7.0.2'){
+				$this->_productCollection->getSelect()->reset('order');
+				$this->_productCollection->getSelect()->order('final_price','asc');
+				$this->_minPrice = round($this->_productCollection->getFirstItem()->getFinalPrice());
+			}else{
+				$this->_minPrice = floor($this->_productCollection->getMinPrice());
+			}
+
 			$this->_searchSession->setMinPrice($this->_minPrice);		
 		}else{
 			$this->_minPrice = $this->_searchSession->getMinPrice();	
 		}
+		
 	}
 	
 	/*
@@ -424,11 +508,21 @@ class Magehouse_Slider_Block_Catalog_Layer_Filter_Price extends Mage_Catalog_Blo
 	*/
 	public function setMaxPrice(){
 		if( (isset($_GET['q']) && !isset($_GET['max'])) || !isset($_GET['q'])){
-			$this->_maxPrice = $this->_productCollection->getMaxPrice();
+			
+			if(Mage::getVersion() < '1.7.0.2'){
+				$this->_productCollection->getSelect()->reset('order');
+				$this->_productCollection->getSelect()->order('final_price','asc');
+				$this->_maxPrice = round($this->_productCollection->getLastItem()->getFinalPrice());
+			}else{
+				$this->_maxPrice = ceil($this->_productCollection->getMaxPrice());	
+			}
+			
 			$this->_searchSession->setMaxPrice($this->_maxPrice);
 		}else{
 			$this->_maxPrice = $this->_searchSession->getMaxPrice();
 		}
+		
+		
 	}
 	
 	/*
@@ -465,7 +559,7 @@ class Magehouse_Slider_Block_Catalog_Layer_Filter_Price extends Mage_Catalog_Blo
 	public function setCurrentPrices(){
 		
 		$this->_currMinPrice = $this->getRequest()->getParam('min');
-		$this->_currMaxPrice = $this->getRequest()->getParam('max'); 
+		$this->_currMaxPrice = $this->getRequest()->getParam('max');
 	}	
 	
 	/*
@@ -478,6 +572,16 @@ class Magehouse_Slider_Block_Catalog_Layer_Filter_Price extends Mage_Catalog_Blo
         return $store->convertPrice($srcPrice, false, false);
 	}
 	
+	
+	public function setInSession($var, $value){
+		$set = "set".$var;
+		Mage::getSingleton('catalog/session')->$set($value);	
+	}
+	
+	public function getFromSession($var){
+		$get = "get".$var;
+		return Mage::getSingleton('catalog/session')->$get();	
+	}
 	
 	/*
 	* Retrive store object

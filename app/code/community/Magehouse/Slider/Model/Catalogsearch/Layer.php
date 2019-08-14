@@ -47,7 +47,7 @@ class Magehouse_Slider_Model_Catalogsearch_Layer extends Mage_CatalogSearch_Mode
         Mage::getSingleton('catalog/product_status')->addVisibleFilterToCollection($collection);
         Mage::getSingleton('catalog/product_visibility')->addVisibleInSearchFilterToCollection($collection);
 		
-		$this->currentRate = $collection->getCurrencyRate();
+		$this->currentRate = Mage::app()->getStore()->getCurrentCurrencyRate();;
 		$max=$this->getMaxPriceFilter();
 		$min=$this->getMinPriceFilter();
 		

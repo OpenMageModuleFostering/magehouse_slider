@@ -26,7 +26,7 @@ class Magehouse_Slider_Model_Catalog_Layer extends Mage_Catalog_Model_Layer
             $this->_productCollections[$this->getCurrentCategory()->getId()] = $collection;
         }
 		
-		$this->currentRate = $collection->getCurrencyRate();
+		$this->currentRate = Mage::app()->getStore()->getCurrentCurrencyRate();;
 		$max=$this->getMaxPriceFilter();
 		$min=$this->getMinPriceFilter();
 		

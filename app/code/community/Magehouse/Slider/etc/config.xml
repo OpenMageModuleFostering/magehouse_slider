@@ -106,6 +106,7 @@
 		<overlay_opacity>0.7</overlay_opacity>
 		<loading_text>Fetching Results... Please wait...</loading_text>
 		<loading_text_color>#ffffff</loading_text_color>
+		<loading_image />
 	  </ajax_conf>
     </price_slider>
   </default>
