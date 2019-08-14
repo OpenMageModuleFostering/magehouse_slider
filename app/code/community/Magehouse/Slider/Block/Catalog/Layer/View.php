@@ -137,15 +137,15 @@ class Magehouse_Slider_Block_Catalog_Layer_View extends Mage_Catalog_Block_Layer
 		
 		$html = '<style type="text/css">';	
 			$html .= '.ui-slider .ui-slider-handle{';
-			if($bgHandle){$html .= 'background:'.$bgHandle;}
+			if($bgHandle){$html .= 'background:'.$bgHandle.';';}
 			$html .= 'width:'.$handleWidth.'px; height:'.$handleHeight.'px; border:none;}';
 			
 			$html .= '.ui-slider{';
-			if($bgSlider){$html .= 'background:'.$bgSlider;}
+			if($bgSlider){$html .= 'background:'.$bgSlider.';';}
 			$html .= ' width:'.$sliderWidth.'px; height:'.$sliderHeight.'px; border:none;}';
 			
 			$html .= '.ui-slider .ui-slider-range{';
-			if($bgRange){$html .= 'background:'.$bgRange;}
+			if($bgRange){$html .= 'background:'.$bgRange.';';}
 			$html .= 'border:none;}';
 			
 			$html .= '#amount{'.$amountStyle.'}';	
