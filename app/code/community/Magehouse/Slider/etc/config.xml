@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<config>
+  <modules>
+    <Magehouse_Slider>
+      <version>0.1.0</version>
+    </Magehouse_Slider>
+  </modules>
+  <global>
+    <helpers>
+      <slider>
+        <class>Magehouse_Slider_Helper</class>
+      </slider>
+    </helpers>
+    <blocks>
+      <catalog>
+        <rewrite>
+          <layer_view>Magehouse_Slider_Block_Catalog_Layer_View</layer_view>
+        </rewrite>
+      </catalog>
+    </blocks>
+    <models>
+      <catalog>
+        <rewrite>
+          <layer>Magehouse_Slider_Model_Catalog_Layer</layer>
+        </rewrite>
+      </catalog>
+    </models>
+  </global>
+  <frontend>
+    <layout>
+      <updates>
+        <slider>
+          <file>slider.xml</file>
+        </slider>
+      </updates>
+    </layout>
+  </frontend>
+  <default>
+    <price_slider>
+      <price_slider_settings></price_slider_settings>
+      <price_slider_conf>
+	  	<timeout>5000</timeout>
+		
+        <handle_color>#333333</handle_color>
+        <background_color>#eeeeee</background_color>
+        <range_color>#ffbb35</range_color>
+		<handle_width>17</handle_width>
+		<handle_height>18</handle_height>
+		<slider_width>auto</slider_width>
+		<slider_height>7</slider_height>
+		
+      </price_slider_conf>
+    </price_slider>
+  </default>
+</config>

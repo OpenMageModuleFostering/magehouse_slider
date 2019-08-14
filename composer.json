@@ -1,0 +1,16 @@
+{
+    "name": "OpenMageModuleFostering/Magehouse_Slider",
+    "type": "magento-module",
+    "license": "OSL-v3.0",
+    "homepage": "",
+    "description": "Price Range Slider",
+    "authors": [
+    {
+        "name": "Mrugesh Mistry",
+        "email": "mrugesh.rocks@gmail.com"
+    }
+],
+    "suggest": {
+        "magento-hackathon/magento-composer-installer": "*"
+    }
+}
