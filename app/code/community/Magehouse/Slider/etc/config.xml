@@ -2,7 +2,7 @@
 <config>
   <modules>
     <Magehouse_Slider>
-      <version>0.1.0</version>
+      <version>2.1.0</version>
     </Magehouse_Slider>
   </modules>
   <global>
@@ -30,6 +30,28 @@
         </rewrite>
       </catalogsearch>
     </models>
+	<resources>
+		<slider_setup>
+		  <setup>
+			<module>Magehouse_Slider</module>
+			<class>Magehouse_Slider_Model_Resource_Setup</class>
+		  </setup>
+		  <connection>
+			<use>core_setup</use>
+		  </connection>
+		</slider_setup>
+	 
+		<slider_write>
+		  <connection>
+			<use>core_write</use>
+		  </connection>
+		</slider_write>
+		<slider_read>
+		  <connection>
+			<use>core_read</use>
+		  </connection>
+		</slider_read>
+	  </resources>
   </global>
   <frontend>
     <layout>
@@ -39,13 +61,34 @@
         </slider>
       </updates>
     </layout>
+	<routers>
+		<slider>
+			<use>standard</use>
+			<args>
+				<module>Magehouse_Slider</module>
+				<frontName>slider</frontName>
+			</args>
+		</slider>
+		<catalog>
+			<args>
+				<modules>
+					<Magehouse_Slider before="Mage_Catalog">Magehouse_Slider_Catalog</Magehouse_Slider>
+				</modules>
+			</args>
+		</catalog>
+		<catalogsearch>
+			<args>
+				<modules>
+					<Magehouse_Slider before="Mage_CatalogSearch">Magehouse_Slider_CatalogSearch</Magehouse_Slider>
+				</modules>
+			</args>
+		</catalogsearch>
+	</routers>
   </frontend>
   <default>
     <price_slider>
       <price_slider_settings></price_slider_settings>
       <price_slider_conf>
-	  	<timeout>5000</timeout>
-		
         <handle_color>#333333</handle_color>
         <background_color>#eeeeee</background_color>
         <range_color>#ffbb35</range_color>
@@ -53,8 +96,13 @@
 		<handle_height>18</handle_height>
 		<slider_width>auto</slider_width>
 		<slider_height>7</slider_height>
-		
       </price_slider_conf>
+	  <ajax_conf>
+		<overlay_color>#000000</overlay_color>
+		<overlay_opacity>0.7</overlay_opacity>
+		<loading_text>Fetching Results... Please wait...</loading_text>
+		<loading_text_color>#ffffff</loading_text_color>
+	  </ajax_conf>
     </price_slider>
   </default>
 </config>

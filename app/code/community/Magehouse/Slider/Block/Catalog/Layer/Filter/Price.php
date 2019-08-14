@@ -80,6 +80,10 @@ class Magehouse_Slider_Block_Catalog_Layer_Filter_Price extends Mage_Catalog_Blo
 		$styles = $this->prepareCustomStyles();
 		if($this->_currMaxPrice > 0){$max = $this->_currMaxPrice;} else{$max = $this->_maxPrice;}
 		if($this->_currMinPrice > 0){$min = $this->_currMinPrice;} else{$min = $this->_minPrice;}
+		$sliderAjax = $this->getConfig('price_slider/ajax_conf/slider');
+		if($sliderAjax){
+			$ajaxCall = 'sliderAjax(url);';
+		}else{$ajaxCall = '';}
 		$html = '
 			<script type="text/javascript">
 				jQuery(function($) {
@@ -97,10 +101,12 @@ class Magehouse_Slider_Block_Catalog_Layer_Filter_Price extends Mage_Catalog_Blo
 							var url = "'.$baseUrl.'"+"?min="+x1+"&max="+x2+"'.$this->prepareParams().'";
 							if(x1 != '.$min.' && x2 != '.$max.'){
 								clearTimeout(timer);
-								window.location= url;
+								//window.location= url;
+								
 							}else{
 									timer = setTimeout(function(){
-										window.location= url;
+										//window.location= url;
+										'.$ajaxCall.'
 									}, '.$timeout.');     
 								}
 						}
