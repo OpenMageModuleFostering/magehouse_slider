@@ -14,7 +14,7 @@
     <blocks>
       <catalog>
         <rewrite>
-          <layer_view>Magehouse_Slider_Block_Catalog_Layer_View</layer_view>
+		  <layer_filter_price>Magehouse_Slider_Block_Catalog_Layer_Filter_Price</layer_filter_price>
         </rewrite>
       </catalog>
     </blocks>

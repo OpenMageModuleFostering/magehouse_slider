@@ -1,16 +1,14 @@
-<?php 
-
+<?php
 /**
- * Catalog layer price filter
+ * Catalog Price Slider
  *
- * @category   Mage
- * @package    Mage_Catalog
- * @author     Magento Core Team <core@magentocommerce.com>
+ * @category   Magehouse
+ * @class    Magehouse_Slider_Block_Catalog_Layer_Filter_Price
+ * @author     Mrugesh Mistry <core@magentocommerce.com>
  */
-
-class Magehouse_Slider_Block_Catalog_Layer_View extends Mage_Catalog_Block_Layer_View
+class Magehouse_Slider_Block_Catalog_Layer_Filter_Price extends Mage_Catalog_Block_Layer_Filter_Price 
 {
-	
+    	
 	public $_currentCategory;
 	public $_productCollection;
 	public $_maxPrice;
@@ -36,8 +34,8 @@ class Magehouse_Slider_Block_Catalog_Layer_View extends Mage_Catalog_Block_Layer
 		else
 			return false;			
 	}
-	
-	public function getSlider(){
+	 
+	public function getHtml(){
 		if($this->getSliderStatus()){
 			$text='
 				<div class="price">
@@ -45,7 +43,8 @@ class Magehouse_Slider_Block_Catalog_Layer_View extends Mage_Catalog_Block_Layer
 						<input type="text" id="amount" readonly="readonly" style="background:none; border:none;" />
 					</p>
 					<div id="slider-range"></div>
-				</div>
+					
+				</div>'.$this->getSliderJs().'
 			';	
 			
 			return $text;
@@ -66,6 +65,10 @@ class Magehouse_Slider_Block_Catalog_Layer_View extends Mage_Catalog_Block_Layer
 		return $url;
 	}
 	
+	public function getCurrencySymbol(){
+		return Mage::app()->getLocale()->currency(Mage::app()->getStore()->getCurrentCurrencyCode())->getSymbol();
+	}
+	
 	public function getSliderJs(){
 		$baseUrl = $this->_currentCategory->getUrl();
 		$timeout = $this->getConfig('price_slider/price_slider_conf/timeout');
@@ -81,11 +84,11 @@ class Magehouse_Slider_Block_Catalog_Layer_View extends Mage_Catalog_Block_Layer
 						max: '.$this->_maxPrice.',
 						values: [ '.$min.', '.$max.' ],
 						slide: function( event, ui ) {
-							$( "#amount" ).val( "$" + ui.values[ 0 ] + " - $" + ui.values[ 1 ] );
+							$( "#amount" ).val( "'.$this->getCurrencySymbol().'" + ui.values[ 0 ] + " - '.$this->getCurrencySymbol().'" + ui.values[ 1 ] );
 						},stop: function( event, ui ) {
 							var x1 = ui.values[0];
 							var x2 = ui.values[1];
-							$( "#amount" ).val( "$"+x1+" - $"+x2 );
+							$( "#amount" ).val( "'.$this->getCurrencySymbol().'"+x1+" - '.$this->getCurrencySymbol().'"+x2 );
 							var url = "'.$baseUrl.'"+"/?min="+x1+"&max="+x2+"'.$this->prepareParams().'";
 							if(x1 != '.$min.' && x2 != '.$max.'){
 								clearTimeout(timer);
@@ -97,8 +100,8 @@ class Magehouse_Slider_Block_Catalog_Layer_View extends Mage_Catalog_Block_Layer
 								}
 						}
 					});
-					$( "#amount" ).val( "$" + $( "#slider-range" ).slider( "values", 0 ) +
-						" - $" + $( "#slider-range" ).slider( "values", 1 ) );
+					$( "#amount" ).val( "'.$this->getCurrencySymbol().'" + $( "#slider-range" ).slider( "values", 0 ) +
+						" - '.$this->getCurrencySymbol().'" + $( "#slider-range" ).slider( "values", 1 ) );
 				});
 			</script>
 			
@@ -181,7 +184,4 @@ class Magehouse_Slider_Block_Catalog_Layer_View extends Mage_Catalog_Block_Layer
 		$this->_currMinPrice = $this->getRequest()->getParam('min');
 		$this->_currMaxPrice = $this->getRequest()->getParam('max'); 
 	}	
-		
 }
-
-?>
