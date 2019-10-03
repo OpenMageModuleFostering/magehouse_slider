@@ -1,16 +1,19 @@
 {
-    "name": "OpenMageModuleFostering/Magehouse_Slider",
+    "name": "OpenMageModuleFostering\/Magehouse_Slider",
     "type": "magento-module",
     "license": "OSL-v3.0",
     "homepage": "",
     "description": "AJAX Layered navigation & toolbar with price slider.",
     "authors": [
-    {
-        "name": "Mrugesh Mistry",
-        "email": "mrugesh.rocks@gmail.com"
-    }
-],
+        {
+            "name": "Mrugesh Mistry",
+            "email": "mrugesh.rocks@gmail.com"
+        }
+    ],
     "suggest": {
-        "magento-hackathon/magento-composer-installer": "*"
-    }
+        "magento-hackathon\/magento-composer-installer": "*"
+    },
+    "keywords": [
+        "openmage-module"
+    ]
 }
